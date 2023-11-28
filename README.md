@@ -14,9 +14,10 @@ Arguments:
   [DOCS_FILE]  Docs.json file to parse [default: Docs.json]
 
 Options:
-  -o, --output <OUTPUT>  Output filename [default: recipes.json]
-  -h, --help             Print help
-  -V, --version          Print version
+  -c, --config-file <CONFIG_FILE>  Config file [default: config.json]
+  -o, --output <OUTPUT>            Output filename [default: recipes.json]
+  -h, --help                       Print help
+  -V, --version                    Print version
 ```
 
 ---
