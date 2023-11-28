@@ -18,3 +18,7 @@ Options:
   -h, --help             Print help
   -V, --version          Print version
 ```
+
+---
+
+If the game updates and the program fails to run for the new game version, you may have to update `config.json` to include the additional native classes for the newly added items and machines, if applicable.  
