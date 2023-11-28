@@ -1,0 +1,17 @@
+{
+    "item_native_class_names": [
+        "FGItemDescriptor",
+        "FGItemDescriptorBiomass",
+        "FGItemDescriptorNuclearFuel",
+        "FGResourceDescriptor",
+        "FGEquipmentDescriptor",
+        "FGConsumableDescriptor",
+        "FGAmmoTypeProjectile",
+        "FGAmmoTypeInstantHit",
+        "FGAmmoTypeSpreadshot"
+    ],
+    "machine_native_class_names": [
+        "FGBuildableManufacturer",
+        "FGBuildableManufacturerVariablePower"
+    ]
+}

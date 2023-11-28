@@ -21,6 +21,12 @@ struct Recipe {
     products: Vec<(String, f64)>,
 }
 
+#[derive(Deserialize, Clone)]
+struct Config {
+    item_native_class_names: Vec<String>,
+    machine_native_class_names: Vec<String>,
+}
+
 struct LexicalParser<'a> {
     target: &'a str,
     index: usize,
@@ -102,6 +108,10 @@ struct Args {
     #[arg(default_value = "Docs.json")]
     docs_file: String,
 
+    /// Config file
+    #[arg(long, short, default_value = "config.json")]
+    config_file: String,
+
     /// Output filename
     #[arg(long, short, default_value = "recipes.json")]
     output: String,
@@ -109,6 +119,9 @@ struct Args {
 
 fn main() -> std::io::Result<()> {
     let args = Args::parse();
+
+    let config =
+        serde_json::from_str::<Config>(fs::read_to_string(args.config_file.to_string())?.as_str())?;
 
     println!("Loading {}", args.docs_file);
     let contents = utf16_reader::read_to_string(File::open(args.docs_file)?);
@@ -137,49 +150,38 @@ fn main() -> std::io::Result<()> {
         )
         .collect();
 
-    let collect_classes = |classes: Vec<&str>| {
+    let collect_classes = |classes: Vec<String>| {
         classes
             .into_iter()
-            .flat_map(|native_class_name| class_map[native_class_name].clone())
+            .flat_map(|native_class_name| class_map[&native_class_name].clone())
             .collect::<Vec<_>>()
     };
 
     println!("Parsing contents");
-    let item_info_by_id: HashMap<String, (String, bool)> = collect_classes(vec![
-        "FGItemDescriptor",
-        "FGItemDescriptorBiomass",
-        "FGItemDescriptorNuclearFuel",
-        "FGResourceDescriptor",
-        "FGEquipmentDescriptor",
-        "FGConsumableDescriptor",
-        "FGAmmoTypeProjectile",
-        "FGAmmoTypeInstantHit",
-        "FGAmmoTypeSpreadshot",
-    ])
-    .into_iter()
-    .map(|class| {
-        (
-            class["ClassName"].as_str().unwrap().to_string(),
-            (
-                class["mDisplayName"].as_str().unwrap().to_string(),
-                class.get("mForm").map_or(false, |form| form == "RF_LIQUID"),
-            ),
-        )
-    })
-    .collect();
+    let item_info_by_id: HashMap<String, (String, bool)> =
+        collect_classes(config.item_native_class_names)
+            .into_iter()
+            .map(|class| {
+                (
+                    class["ClassName"].as_str().unwrap().to_string(),
+                    (
+                        class["mDisplayName"].as_str().unwrap().to_string(),
+                        class.get("mForm").map_or(false, |form| form == "RF_LIQUID"),
+                    ),
+                )
+            })
+            .collect();
 
-    let machine_name_id_pairs: Vec<(String, String)> = collect_classes(vec![
-        "FGBuildableManufacturer",
-        "FGBuildableManufacturerVariablePower",
-    ])
-    .into_iter()
-    .map(|class| {
-        (
-            class["ClassName"].as_str().unwrap().to_string(),
-            class["mDisplayName"].as_str().unwrap().to_string(),
-        )
-    })
-    .collect();
+    let machine_name_id_pairs: Vec<(String, String)> =
+        collect_classes(config.machine_native_class_names)
+            .into_iter()
+            .map(|class| {
+                (
+                    class["ClassName"].as_str().unwrap().to_string(),
+                    class["mDisplayName"].as_str().unwrap().to_string(),
+                )
+            })
+            .collect();
 
     println!("Constructing Recipes");
     let (alternates, defaults): (Vec<_>, Vec<_>) = class_map["FGRecipe"]
